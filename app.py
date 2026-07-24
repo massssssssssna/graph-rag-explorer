@@ -1,7 +1,7 @@
 """
 app.py — Flask application entry point.
 Registers all blueprints (Graph RAG + LangChain Vector RAG), serves the frontend.
-Gracefully handles Vercel serverless environment (no persistent disk).
+Gracefully handles Vercel serverless environment.
 """
 import logging
 import os
@@ -50,9 +50,19 @@ def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
 
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(FRONTEND_DIR / "css", filename)
+
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(FRONTEND_DIR / "js", filename)
+
+
 @app.route("/<path:filename>")
 def static_files(filename):
-    """Serve all frontend assets (CSS, JS, etc.)."""
+    """Serve any remaining static assets."""
     return send_from_directory(FRONTEND_DIR, filename)
 
 
