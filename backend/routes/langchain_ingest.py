@@ -1,7 +1,8 @@
 """
 backend/routes/langchain_ingest.py
 API endpoints for LangChain document ingestion (PDF, DOCX, TXT upload & parsing).
-Extracts knowledge triples on ingestion to keep the Entity Graph updated dynamically.
+Extracts knowledge triples for active session RAG.
+Does NOT persist user uploads to disk so page refresh always resets to the primary dataset.
 """
 import logging
 import uuid
@@ -27,7 +28,7 @@ def lc_ingest():
     """
     POST /api/lc/ingest
     Supports multipart file upload (PDF/DOCX/TXT) or raw JSON text payload.
-    Automatically extracts entity triples to update the Knowledge Graph!
+    Adds extracted triples to in-memory graph for active session (not saved to primary graph.json).
     """
     filename = "document.txt"
     file_type = "txt"
@@ -63,7 +64,6 @@ def lc_ingest():
     if not pages:
         return jsonify({"error": "Could not extract text from document."}), 400
 
-    # Extract full text safely from tuples (text, meta)
     full_text = "\n\n".join(p[0] if isinstance(p, tuple) else str(p) for p in pages)
 
     # 1. Smart sentence-aware chunking
@@ -74,15 +74,11 @@ def lc_ingest():
     # 2. Vector Store ingestion (Qdrant Cloud / Voyage AI)
     added_count = add_documents_to_store(docs)
 
-    # 3. Knowledge Graph Entity Triple extraction & graph update
+    # 3. Knowledge Graph Entity Triple extraction (in-memory for active session only)
     triples = extract_triples(full_text)
     if triples:
         knowledge_graph.add_triples(triples)
-        try:
-            knowledge_graph.save()
-            logger.info("Knowledge Graph updated with %d triples from %s", len(triples), filename)
-        except Exception as exc:
-            logger.warning("Graph save skipped: %s", exc)
+        logger.info("Added %d triples from %s to active session graph (not saved to primary graph.json)", len(triples), filename)
 
     # 4. Store document metadata in Supabase Cloud
     doc_id = str(uuid.uuid4())
