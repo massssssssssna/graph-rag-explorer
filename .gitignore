@@ -22,5 +22,5 @@ Thumbs.db
 tmp/
 *.log
 data/*.pkl
-data/*.json
-!data/solar_system_space_exploration.txt
+!data/*.json
+!data/*.txt

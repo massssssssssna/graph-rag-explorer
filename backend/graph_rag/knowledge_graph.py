@@ -1,16 +1,17 @@
 """
 backend/graph_rag/knowledge_graph.py
 NetworkX DiGraph wrapper — builds, queries, persists, and serialises
-the knowledge graph.
+the knowledge graph from data files (Solar System, AI Ecosystem, etc.).
 """
 import json
 import logging
 import difflib
+import glob
+import os
 from typing import List, Optional
 
 import networkx as nx
-
-from backend.graph_rag.extractor import Triple
+from backend.graph_rag.extractor import Triple, extract_triples
 import config
 
 logger = logging.getLogger(__name__)
@@ -29,19 +30,19 @@ class KnowledgeGraph:
     def graph(self) -> nx.DiGraph:
         return self._g
 
-
     # ── Mutation ─────────────────────────────────────────────────────────────
 
     def add_triples(self, triples: List[Triple]) -> None:
-        """Add a list of triples to the graph (deduplicates automatically)."""
+        """Add a list of triples to the graph."""
         for t in triples:
-            # Nodes are implicitly created by add_edge
-            if not self._g.has_edge(t.subject, t.object):
-                self._g.add_edge(t.subject, t.object, relation=t.relation)
-            else:
-                # Keep existing edge; do not overwrite relation
-                pass
-        logger.debug(
+            s = str(t.subject).strip().lower()
+            o = str(t.object).strip().lower()
+            r = str(t.relation).strip().lower().replace(" ", "_")
+            if s and o and r:
+                if not self._g.has_edge(s, o):
+                    self._g.add_edge(s, o, relation=r)
+
+        logger.info(
             "Graph now has %d nodes, %d edges.",
             self._g.number_of_nodes(),
             self._g.number_of_edges(),
@@ -53,26 +54,16 @@ class KnowledgeGraph:
     # ── Queries ──────────────────────────────────────────────────────────────
 
     def find_node(self, entity: str, cutoff: float = 0.6) -> Optional[str]:
-        """
-        Find the closest matching node label using fuzzy string matching.
-        Returns None if no match is above `cutoff`.
-        """
         entity = entity.strip().lower()
         nodes = list(self._g.nodes())
         if not nodes:
             return None
-        # Exact match first
         if entity in nodes:
             return entity
-        # Fuzzy match
         matches = difflib.get_close_matches(entity, nodes, n=1, cutoff=cutoff)
         return matches[0] if matches else None
 
     def get_neighbors(self, node: str, depth: int = 1) -> List[Triple]:
-        """
-        Return all triples reachable from `node` within `depth` hops.
-        Traverses both outgoing edges.
-        """
         visited: set = set()
         triples: List[Triple] = []
         frontier = {node}
@@ -101,11 +92,37 @@ class KnowledgeGraph:
             "edges": self._g.number_of_edges(),
         }
 
-    # ── Serialisation ─────────────────────────────────────────────────────────
+    # ── Serialisation & Auto-Build ─────────────────────────────────────────────
 
     def to_json(self) -> dict:
         """Return graph as node-link JSON (compatible with D3.js)."""
+        if self._g.number_of_nodes() == 0:
+            self.rebuild_from_data_files()
         return nx.node_link_data(self._g, edges="links")
+
+    def rebuild_from_data_files(self) -> int:
+        """Scans data/*.txt (Solar System, AI Ecosystem, etc.) and populates knowledge graph."""
+        self.clear()
+        data_dir = config.DATA_DIR
+        txt_files = glob.glob(os.path.join(str(data_dir), "*.txt"))
+        total_triples = 0
+        for fpath in txt_files:
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    text = f.read()
+                triples = extract_triples(text)
+                self.add_triples(triples)
+                total_triples += len(triples)
+                logger.info("Loaded %d triples from %s", len(triples), os.path.basename(fpath))
+            except Exception as exc:
+                logger.error("Error building graph from %s: %s", fpath, exc)
+
+        logger.info(
+            "Rebuilt Knowledge Graph from data files: %d nodes, %d edges",
+            self._g.number_of_nodes(),
+            self._g.number_of_edges(),
+        )
+        return total_triples
 
     def save(self, path=config.GRAPH_FILE) -> None:
         data = nx.node_link_data(self._g, edges="links")
@@ -114,24 +131,20 @@ class KnowledgeGraph:
         logger.info("Graph saved to %s", path)
 
     def load(self, path=config.GRAPH_FILE) -> bool:
-        """Load graph from JSON file. Returns True on success."""
+        """Load graph from JSON file or rebuild from data files if empty."""
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             self._g = nx.node_link_graph(data, edges="links", directed=True)
-            logger.info(
-                "Graph loaded: %d nodes, %d edges",
-                self._g.number_of_nodes(),
-                self._g.number_of_edges(),
-            )
+            if self._g.number_of_nodes() == 0:
+                self.rebuild_from_data_files()
+            logger.info("Graph loaded: %d nodes, %d edges", self._g.number_of_nodes(), self._g.number_of_edges())
             return True
-        except FileNotFoundError:
-            logger.info("No saved graph found at %s — starting fresh.", path)
-            return False
         except Exception as exc:
-            logger.error("Failed to load graph: %s", exc)
-            return False
+            logger.warning("Failed to load graph from %s (%s) — auto-rebuilding from data files.", path, exc)
+            self.rebuild_from_data_files()
+            return True
 
 
-# ── Singleton shared across the Flask app ────────────────────────────────────
+# Singleton shared instance
 knowledge_graph = KnowledgeGraph()

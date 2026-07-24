@@ -1,0 +1,555 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "id": "openai"
+    },
+    {
+      "id": "sam altman"
+    },
+    {
+      "id": "greg brockman"
+    },
+    {
+      "id": "google deepmind"
+    },
+    {
+      "id": "demis hassabis"
+    },
+    {
+      "id": "anthropic"
+    },
+    {
+      "id": "dario amodei"
+    },
+    {
+      "id": "nvidia"
+    },
+    {
+      "id": "jensen huang"
+    },
+    {
+      "id": "chatgpt"
+    },
+    {
+      "id": "gpt-4"
+    },
+    {
+      "id": "google"
+    },
+    {
+      "id": "gemini"
+    },
+    {
+      "id": "claude"
+    },
+    {
+      "id": "claude 3 opus"
+    },
+    {
+      "id": "h100 gpu"
+    },
+    {
+      "id": "gpt-4 training"
+    },
+    {
+      "id": "microsoft"
+    },
+    {
+      "id": "microsoft azure"
+    },
+    {
+      "id": "microsoft copilot"
+    },
+    {
+      "id": "amazon"
+    },
+    {
+      "id": "amazon web services"
+    },
+    {
+      "id": "gemini 1.5 pro"
+    },
+    {
+      "id": "google deepmind as its primary artificial intelligence research division"
+    },
+    {
+      "id": "openai model ecosystem\nopenai"
+    },
+    {
+      "id": "dall-e"
+    },
+    {
+      "id": "google model ecosystem\ngoogle"
+    },
+    {
+      "id": "gemini 1"
+    },
+    {
+      "id": "google workspace applications"
+    },
+    {
+      "id": "anthropic model ecosystem\nanthropic"
+    },
+    {
+      "id": "claude 3"
+    },
+    {
+      "id": "cuda software"
+    },
+    {
+      "id": "cuda"
+    },
+    {
+      "id": "gpu acceleration for deep learning frameworks"
+    },
+    {
+      "id": "microsoft and openai alliance\nmicrosoft"
+    },
+    {
+      "id": "openai model training"
+    },
+    {
+      "id": "cloud hyperscaler investments in anthropic\ngoogle"
+    },
+    {
+      "id": "anthropic model training"
+    },
+    {
+      "id": "amazon bedrock services"
+    },
+    {
+      "id": "hardware partnerships\nnvidia"
+    },
+    {
+      "id": "earth"
+    },
+    {
+      "id": "sun"
+    },
+    {
+      "id": "moon"
+    },
+    {
+      "id": "mars"
+    },
+    {
+      "id": "iss"
+    },
+    {
+      "id": "nasa"
+    },
+    {
+      "id": "spacex"
+    },
+    {
+      "id": "falcon 9"
+    },
+    {
+      "id": "crew dragon"
+    },
+    {
+      "id": "iss cargo"
+    },
+    {
+      "id": "perseverance rover"
+    },
+    {
+      "id": "scientific instruments"
+    },
+    {
+      "id": "sample collection tubes"
+    },
+    {
+      "id": "moxie experiment"
+    },
+    {
+      "id": "mars atmospheric oxygen"
+    },
+    {
+      "id": "microgravity experiments"
+    },
+    {
+      "id": "the moon"
+    },
+    {
+      "id": "the falcon 9 is"
+    },
+    {
+      "id": "spacex from launch facilities in florida and california"
+    },
+    {
+      "id": "the falcon 9"
+    },
+    {
+      "id": "crew dragon spacecraft into low earth orbit"
+    },
+    {
+      "id": "the perseverance rover was"
+    },
+    {
+      "id": "nasa in july 2020"
+    },
+    {
+      "id": "the perseverance rover"
+    },
+    {
+      "id": "mars inside jezero crater in february 2021"
+    },
+    {
+      "id": "the iss"
+    },
+    {
+      "id": "earth at an average altitude of approximately 400 kilometers"
+    }
+  ],
+  "links": [
+    {
+      "relation": "founded_by",
+      "source": "openai",
+      "target": "sam altman"
+    },
+    {
+      "relation": "founded_by",
+      "source": "openai",
+      "target": "greg brockman"
+    },
+    {
+      "relation": "develops",
+      "source": "openai",
+      "target": "chatgpt"
+    },
+    {
+      "relation": "releases",
+      "source": "openai",
+      "target": "gpt-4"
+    },
+    {
+      "relation": "competes_with",
+      "source": "openai",
+      "target": "google"
+    },
+    {
+      "relation": "competes_with",
+      "source": "openai",
+      "target": "anthropic"
+    },
+    {
+      "relation": "releases",
+      "source": "openai",
+      "target": "dall-e"
+    },
+    {
+      "relation": "founded_by",
+      "source": "google deepmind",
+      "target": "demis hassabis"
+    },
+    {
+      "relation": "founded_by",
+      "source": "anthropic",
+      "target": "dario amodei"
+    },
+    {
+      "relation": "develops",
+      "source": "anthropic",
+      "target": "claude"
+    },
+    {
+      "relation": "releases",
+      "source": "anthropic",
+      "target": "claude 3 opus"
+    },
+    {
+      "relation": "releases",
+      "source": "anthropic",
+      "target": "claude 3"
+    },
+    {
+      "relation": "founded_by",
+      "source": "nvidia",
+      "target": "jensen huang"
+    },
+    {
+      "relation": "develops",
+      "source": "nvidia",
+      "target": "h100 gpu"
+    },
+    {
+      "relation": "develops",
+      "source": "nvidia",
+      "target": "cuda software"
+    },
+    {
+      "relation": "partners_with",
+      "source": "nvidia",
+      "target": "google"
+    },
+    {
+      "relation": "partners_with",
+      "source": "nvidia",
+      "target": "microsoft"
+    },
+    {
+      "relation": "competes_with",
+      "source": "chatgpt",
+      "target": "gemini"
+    },
+    {
+      "relation": "competes_with",
+      "source": "chatgpt",
+      "target": "claude"
+    },
+    {
+      "relation": "powers",
+      "source": "gpt-4",
+      "target": "chatgpt"
+    },
+    {
+      "relation": "powers",
+      "source": "gpt-4",
+      "target": "microsoft copilot"
+    },
+    {
+      "relation": "competes_with",
+      "source": "gpt-4",
+      "target": "gemini 1.5 pro"
+    },
+    {
+      "relation": "competes_with",
+      "source": "gpt-4",
+      "target": "claude 3 opus"
+    },
+    {
+      "relation": "competes_with",
+      "source": "gpt-4",
+      "target": "gemini 1"
+    },
+    {
+      "relation": "develops",
+      "source": "google",
+      "target": "gemini"
+    },
+    {
+      "relation": "invests_in",
+      "source": "google",
+      "target": "anthropic"
+    },
+    {
+      "relation": "operates",
+      "source": "google",
+      "target": "google deepmind as its primary artificial intelligence research division"
+    },
+    {
+      "relation": "releases",
+      "source": "google",
+      "target": "gemini 1"
+    },
+    {
+      "relation": "competes_with",
+      "source": "google",
+      "target": "microsoft"
+    },
+    {
+      "relation": "powers",
+      "source": "gemini",
+      "target": "google workspace applications"
+    },
+    {
+      "relation": "powers",
+      "source": "claude",
+      "target": "amazon bedrock services"
+    },
+    {
+      "relation": "powers",
+      "source": "h100 gpu",
+      "target": "gpt-4 training"
+    },
+    {
+      "relation": "invests_in",
+      "source": "microsoft",
+      "target": "openai"
+    },
+    {
+      "relation": "powers",
+      "source": "microsoft azure",
+      "target": "openai"
+    },
+    {
+      "relation": "powers",
+      "source": "microsoft azure",
+      "target": "openai model training"
+    },
+    {
+      "relation": "invests_in",
+      "source": "amazon",
+      "target": "anthropic"
+    },
+    {
+      "relation": "powers",
+      "source": "amazon web services",
+      "target": "anthropic"
+    },
+    {
+      "relation": "powers",
+      "source": "amazon web services",
+      "target": "anthropic model training"
+    },
+    {
+      "relation": "develops",
+      "source": "openai model ecosystem\nopenai",
+      "target": "chatgpt"
+    },
+    {
+      "relation": "develops",
+      "source": "google model ecosystem\ngoogle",
+      "target": "gemini"
+    },
+    {
+      "relation": "develops",
+      "source": "anthropic model ecosystem\nanthropic",
+      "target": "claude"
+    },
+    {
+      "relation": "powers",
+      "source": "cuda",
+      "target": "gpu acceleration for deep learning frameworks"
+    },
+    {
+      "relation": "invests_in",
+      "source": "microsoft and openai alliance\nmicrosoft",
+      "target": "openai"
+    },
+    {
+      "relation": "invests_in",
+      "source": "cloud hyperscaler investments in anthropic\ngoogle",
+      "target": "anthropic"
+    },
+    {
+      "relation": "partners_with",
+      "source": "hardware partnerships\nnvidia",
+      "target": "openai"
+    },
+    {
+      "relation": "orbits",
+      "source": "earth",
+      "target": "sun"
+    },
+    {
+      "relation": "orbits",
+      "source": "moon",
+      "target": "earth"
+    },
+    {
+      "relation": "orbits",
+      "source": "mars",
+      "target": "sun"
+    },
+    {
+      "relation": "orbits",
+      "source": "iss",
+      "target": "earth"
+    },
+    {
+      "relation": "carries",
+      "source": "iss",
+      "target": "microgravity experiments"
+    },
+    {
+      "relation": "explores",
+      "source": "nasa",
+      "target": "moon"
+    },
+    {
+      "relation": "explores",
+      "source": "nasa",
+      "target": "mars"
+    },
+    {
+      "relation": "operates",
+      "source": "nasa",
+      "target": "iss"
+    },
+    {
+      "relation": "develops",
+      "source": "spacex",
+      "target": "falcon 9"
+    },
+    {
+      "relation": "launched_by",
+      "source": "falcon 9",
+      "target": "spacex"
+    },
+    {
+      "relation": "carries",
+      "source": "falcon 9",
+      "target": "crew dragon"
+    },
+    {
+      "relation": "carries",
+      "source": "falcon 9",
+      "target": "iss cargo"
+    },
+    {
+      "relation": "launched_by",
+      "source": "perseverance rover",
+      "target": "nasa"
+    },
+    {
+      "relation": "landed_on",
+      "source": "perseverance rover",
+      "target": "mars"
+    },
+    {
+      "relation": "carries",
+      "source": "perseverance rover",
+      "target": "scientific instruments"
+    },
+    {
+      "relation": "carries",
+      "source": "perseverance rover",
+      "target": "sample collection tubes"
+    },
+    {
+      "relation": "carries",
+      "source": "perseverance rover",
+      "target": "moxie experiment"
+    },
+    {
+      "relation": "discovered",
+      "source": "perseverance rover",
+      "target": "mars atmospheric oxygen"
+    },
+    {
+      "relation": "orbits",
+      "source": "the moon",
+      "target": "earth"
+    },
+    {
+      "relation": "launched_by",
+      "source": "the falcon 9 is",
+      "target": "spacex from launch facilities in florida and california"
+    },
+    {
+      "relation": "carries",
+      "source": "the falcon 9",
+      "target": "crew dragon spacecraft into low earth orbit"
+    },
+    {
+      "relation": "launched_by",
+      "source": "the perseverance rover was",
+      "target": "nasa in july 2020"
+    },
+    {
+      "relation": "landed_on",
+      "source": "the perseverance rover",
+      "target": "mars inside jezero crater in february 2021"
+    },
+    {
+      "relation": "orbits",
+      "source": "the iss",
+      "target": "earth at an average altitude of approximately 400 kilometers"
+    }
+  ]
+}
