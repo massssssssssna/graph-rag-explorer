@@ -1,7 +1,7 @@
 """
 app.py — Flask application entry point.
 Registers all blueprints (Graph RAG + LangChain Vector RAG), serves the frontend.
-Gracefully handles Vercel serverless environment.
+Loads state on import so Vercel Serverless lambdas always have the Knowledge Graph initialized.
 """
 import logging
 import os
@@ -66,9 +66,9 @@ def static_files(filename):
     return send_from_directory(FRONTEND_DIR, filename)
 
 
-# ── Load persisted state on startup (local only) ──────────────────────────────
+# ── Load persisted state on app import (Crucial for Vercel Serverless) ─────────
 def _load_state():
-    """Load Graph RAG state. Safe to fail on Vercel (no persistent disk)."""
+    """Load Graph RAG state immediately on boot or WSGI import."""
     try:
         from backend.graph_rag.knowledge_graph import knowledge_graph
         from backend.vector_rag.vector_store import vector_store
@@ -76,16 +76,19 @@ def _load_state():
         vector_store.load()
         stats = knowledge_graph.stats()
         logger.info(
-            "Startup — graph: %d nodes / %d edges | chunks: %d",
+            "State loaded — graph: %d nodes / %d edges | vector store: %d chunks",
             stats["nodes"], stats["edges"], vector_store.size(),
         )
     except Exception as exc:
-        logger.warning("State load skipped (Vercel/serverless): %s", exc)
+        logger.warning("State load notice: %s", exc)
+
+
+# Execute state load immediately so Vercel Serverless lambdas have the graph ready!
+_load_state()
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    _load_state()
     port = int(os.environ.get("PORT", 5000))
     logger.info("Starting LangChain Vector RAG server on http://127.0.0.1:%d", port)
     app.run(debug=True, port=port, use_reloader=False, threaded=True)

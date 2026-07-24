@@ -230,6 +230,42 @@
     },
     {
       "id": "medtech"
+    },
+    {
+      "id": "context\nearth"
+    },
+    {
+      "id": "sun orbital mechanics"
+    },
+    {
+      "id": "earth orbital mechanics"
+    },
+    {
+      "id": "moon agency mission"
+    },
+    {
+      "id": "mars agency mission"
+    },
+    {
+      "id": "falcon 9 launch vehicles"
+    },
+    {
+      "id": "spacex launch operations"
+    },
+    {
+      "id": "crew dragon orbital transport"
+    },
+    {
+      "id": "iss cargo orbital transport"
+    },
+    {
+      "id": "context\nperseverance rovercarries sample collection tubes hardware payload\nperseverance rovercarries moxie experiment hardware payload\nperseverance roverdiscovered mars atmospheric oxygenscientific discovery\nnasa"
+    },
+    {
+      "id": "iss orbital infrastructure"
+    },
+    {
+      "id": "microgravity experiments scientific laboratory"
     }
   ],
   "links": [
@@ -470,8 +506,18 @@
     },
     {
       "relation": "orbits",
+      "source": "moon",
+      "target": "earth orbital mechanics"
+    },
+    {
+      "relation": "orbits",
       "source": "mars",
       "target": "sun"
+    },
+    {
+      "relation": "orbits",
+      "source": "mars",
+      "target": "sun orbital mechanics"
     },
     {
       "relation": "orbits",
@@ -482,6 +528,16 @@
       "relation": "carries",
       "source": "iss",
       "target": "microgravity experiments"
+    },
+    {
+      "relation": "orbits",
+      "source": "iss",
+      "target": "earth orbital mechanics"
+    },
+    {
+      "relation": "carries",
+      "source": "iss",
+      "target": "microgravity experiments scientific laboratory"
     },
     {
       "relation": "explores",
@@ -499,9 +555,24 @@
       "target": "iss"
     },
     {
+      "relation": "explores",
+      "source": "nasa",
+      "target": "moon agency mission"
+    },
+    {
+      "relation": "explores",
+      "source": "nasa",
+      "target": "mars agency mission"
+    },
+    {
       "relation": "develops",
       "source": "spacex",
       "target": "falcon 9"
+    },
+    {
+      "relation": "develops",
+      "source": "spacex",
+      "target": "falcon 9 launch vehicles"
     },
     {
       "relation": "launched_by",
@@ -517,6 +588,21 @@
       "relation": "carries",
       "source": "falcon 9",
       "target": "iss cargo"
+    },
+    {
+      "relation": "launched_by",
+      "source": "falcon 9",
+      "target": "spacex launch operations"
+    },
+    {
+      "relation": "carries",
+      "source": "falcon 9",
+      "target": "crew dragon orbital transport"
+    },
+    {
+      "relation": "carries",
+      "source": "falcon 9",
+      "target": "iss cargo orbital transport"
     },
     {
       "relation": "launched_by",
@@ -617,6 +703,16 @@
       "relation": "launched_by",
       "source": "greencure",
       "target": "medtech"
+    },
+    {
+      "relation": "orbits",
+      "source": "context\nearth",
+      "target": "sun orbital mechanics"
+    },
+    {
+      "relation": "operates",
+      "source": "context\nperseverance rovercarries sample collection tubes hardware payload\nperseverance rovercarries moxie experiment hardware payload\nperseverance roverdiscovered mars atmospheric oxygenscientific discovery\nnasa",
+      "target": "iss orbital infrastructure"
     }
   ]
 }

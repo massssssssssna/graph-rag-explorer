@@ -8,6 +8,7 @@ import logging
 import difflib
 import glob
 import os
+from pathlib import Path
 from typing import List, Optional
 
 import networkx as nx
@@ -97,7 +98,7 @@ class KnowledgeGraph:
     def to_json(self) -> dict:
         """Return graph as node-link JSON (compatible with D3.js)."""
         if self._g.number_of_nodes() == 0:
-            self.rebuild_from_data_files()
+            self.load()
         return nx.node_link_data(self._g, edges="links")
 
     def rebuild_from_data_files(self) -> int:
@@ -124,21 +125,33 @@ class KnowledgeGraph:
         )
         return total_triples
 
-    def save(self, path=config.GRAPH_FILE) -> None:
+    def save(self, path=None) -> None:
+        if path is None:
+            path = config.GRAPH_FILE
         data = nx.node_link_data(self._g, edges="links")
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-        logger.info("Graph saved to %s", path)
-
-    def load(self, path=config.GRAPH_FILE) -> bool:
-        """Load graph from JSON file or rebuild from data files if empty."""
         try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            self._g = nx.node_link_graph(data, edges="links", directed=True)
-            if self._g.number_of_nodes() == 0:
-                self.rebuild_from_data_files()
-            logger.info("Graph loaded: %d nodes, %d edges", self._g.number_of_nodes(), self._g.number_of_edges())
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            logger.info("Graph saved to %s", path)
+        except Exception as exc:
+            logger.warning("Graph save skipped (read-only filesystem): %s", exc)
+
+    def load(self, path=None) -> bool:
+        """Load graph from JSON file or rebuild from data files if empty."""
+        if path is None:
+            path = config.GRAPH_FILE
+
+        try:
+            p = Path(path).resolve()
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                self._g = nx.node_link_graph(data, edges="links", directed=True)
+                if self._g.number_of_nodes() > 0:
+                    logger.info("Graph loaded: %d nodes, %d edges from %s", self._g.number_of_nodes(), self._g.number_of_edges(), p)
+                    return True
+
+            self.rebuild_from_data_files()
             return True
         except Exception as exc:
             logger.warning("Failed to load graph from %s (%s) — auto-rebuilding from data files.", path, exc)
