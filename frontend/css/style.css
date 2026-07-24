@@ -378,7 +378,6 @@ textarea:focus, input[type="text"]:focus {
   display: block;
   font-size: 0.75rem;
   color: var(--text-secondary);
-
 }
 
 .metric-val {
@@ -409,13 +408,15 @@ textarea:focus, input[type="text"]:focus {
   to { transform: rotate(360deg); }
 }
 
-/* Graph Visualization Placeholder */
+/* Graph Visualization Area */
 #viz-area {
   width: 100%;
-  height: 600px;
-  background: #090d16;
+  height: 650px;
+  background: #070a12;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   position: relative;
+  overflow: hidden;
 }
 
 #graph-svg {
@@ -433,13 +434,84 @@ textarea:focus, input[type="text"]:focus {
 }
 
 .viz-btn {
-  background: var(--bg-card);
+  background: rgba(21, 28, 44, 0.85);
   border: 1px solid var(--border-color);
   color: #fff;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 6px;
   cursor: pointer;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.viz-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* D3 Graph SVG Element Styling (Fixes thick black edges and unreadable text) */
+.graph-link {
+  fill: none !important;
+  stroke: rgba(99, 102, 241, 0.45);
+  stroke-width: 2px;
+  transition: stroke 0.3s, stroke-width 0.3s;
+}
+
+.graph-link.highlighted {
+  stroke: #a855f7 !important;
+  stroke-width: 3.5px !important;
+}
+
+.graph-link.dimmed {
+  stroke: rgba(255, 255, 255, 0.05) !important;
+  stroke-width: 1px !important;
+}
+
+.graph-link-label-bg {
+  fill: #0f172a;
+  stroke: #334155;
+  stroke-width: 1px;
+}
+
+.graph-link-label-text {
+  fill: #cbd5e1;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.graph-node {
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.graph-node.dimmed {
+  opacity: 0.25;
+}
+
+.graph-node.selected .node-core {
+  stroke: #ffffff !important;
+  stroke-width: 3.5px !important;
+}
+
+.node-label-bg {
+  fill: rgba(15, 23, 42, 0.9);
+  stroke: rgba(148, 163, 184, 0.25);
+  stroke-width: 1px;
+}
+
+.node-label-text {
+  fill: #f8fafc;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  pointer-events: none;
 }
 
 /* Toast */

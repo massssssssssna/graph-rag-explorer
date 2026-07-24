@@ -1,6 +1,6 @@
 /**
  * langchain_ui.js — UI controller for LangChain Vector RAG dashboard.
- * Self-contained: no imports from ui.js to prevent import chain errors.
+ * Self-contained: handles tabs, dropzones, sample questions, and RAG evaluation.
  */
 
 import {
@@ -18,10 +18,11 @@ let selectedFile = null;
 let currentMode = "hybrid";
 
 const SAMPLE_QUESTIONS = [
-  "What is the main subject of the uploaded document?",
-  "List all documents currently ingested in the system database.",
-  "Summarize the document content in 3 bullet points.",
-  "Which entities or services are described in the text?",
+  "Which organization launched the rover that landed on Mars?",
+  "Which rocket developed by SpaceX carries cargo to the ISS?",
+  "What planetary bodies orbit the Sun in our Solar System?",
+  "What scientific experiment on Perseverance Rover discovered oxygen on Mars?",
+  "List all space agencies, launch vehicles, and celestial entities in the graph.",
 ];
 let sampleIdx = 0;
 
@@ -73,6 +74,12 @@ function wireTabs() {
       if (pane) pane.classList.add("active");
 
       if (targetId === "tab-docs") loadDocumentsTable();
+      if (targetId === "tab-graph") {
+        // Trigger graph resize & centering when tab becomes visible
+        import("./graph_viz.js").then(mod => {
+          setTimeout(() => mod.fitToScreen(), 150);
+        }).catch(() => {});
+      }
     });
   });
 }
@@ -175,6 +182,7 @@ function wireQueryButtons() {
   sampleBtn?.addEventListener("click", () => {
     inputEl.value = SAMPLE_QUESTIONS[sampleIdx];
     sampleIdx = (sampleIdx + 1) % SAMPLE_QUESTIONS.length;
+    toast(`Sample Q: "${SAMPLE_QUESTIONS[(sampleIdx - 1 + SAMPLE_QUESTIONS.length) % SAMPLE_QUESTIONS.length]}"`, "info", 2000);
   });
 
   askBtn.addEventListener("click", () => handleQuery(askBtn, inputEl));
