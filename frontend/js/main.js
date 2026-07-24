@@ -5,14 +5,13 @@
 import { initLangChainUI } from "./langchain_ui.js";
 import { fetchGraph, fetchCommunities } from "./api.js";
 
-// Graph viz imports — wrapped in try/catch so failure doesn't break the whole app
 let _initGraph, _renderGraph, _fitToScreen, _toggleHulls;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Boot LangChain UI (tabs, file upload, query, agent, eval)
   initLangChainUI();
 
-  // 2. Boot Graph RAG Visualizer (optional — may not be visible by default)
+  // 2. Boot Graph RAG Visualizer
   try {
     const mod = await import("./graph_viz.js");
     _initGraph    = mod.initGraph;
@@ -28,9 +27,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-async function refreshGraph() {
-  if (!_renderGraph) return;
+export async function refreshGraph() {
   try {
+    if (!_renderGraph) {
+      const mod = await import("./graph_viz.js");
+      _initGraph   = mod.initGraph;
+      _renderGraph = mod.renderGraph;
+      _fitToScreen = mod.fitToScreen;
+      _toggleHulls = mod.toggleHulls;
+      _initGraph("#graph-svg");
+    }
     const data = await fetchGraph();
     let communities = [];
     try {
@@ -38,6 +44,7 @@ async function refreshGraph() {
       communities = commRes.communities || [];
     } catch (_) {}
     _renderGraph(data.graph || { nodes: [], links: [] }, communities);
+    if (_fitToScreen) setTimeout(() => _fitToScreen(), 300);
   } catch (err) {
     console.warn("Graph fetch failed:", err.message);
   }

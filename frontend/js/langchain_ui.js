@@ -1,6 +1,6 @@
 /**
  * langchain_ui.js — UI controller for LangChain Vector RAG dashboard.
- * Self-contained: handles tabs, dropzones, sample questions, and RAG evaluation.
+ * Self-contained: handles tabs, dropzones, sample questions, RAG evaluation, and auto graph refresh.
  */
 
 import {
@@ -20,9 +20,10 @@ let currentMode = "hybrid";
 const SAMPLE_QUESTIONS = [
   "Which organization launched the rover that landed on Mars?",
   "Which rocket developed by SpaceX carries cargo to the ISS?",
-  "What planetary bodies orbit the Sun in our Solar System?",
+  "Which company invested in OpenAI and partners with Microsoft Azure?",
+  "Who founded Google DeepMind and leads its AI research team?",
   "What scientific experiment on Perseverance Rover discovered oxygen on Mars?",
-  "List all space agencies, launch vehicles, and celestial entities in the graph.",
+  "List all space agencies, launch vehicles, and AI tech companies in the graph.",
 ];
 let sampleIdx = 0;
 
@@ -75,9 +76,8 @@ function wireTabs() {
 
       if (targetId === "tab-docs") loadDocumentsTable();
       if (targetId === "tab-graph") {
-        // Trigger graph resize & centering when tab becomes visible
-        import("./graph_viz.js").then(mod => {
-          setTimeout(() => mod.fitToScreen(), 150);
+        import("./main.js").then(mod => {
+          mod.refreshGraph();
         }).catch(() => {});
       }
     });
@@ -139,12 +139,14 @@ function wireDropZone() {
     uploadBtn.disabled = true;
     try {
       const res = await uploadDocumentFile(selectedFile);
-      toast(`✓ Ingested "${res.filename}" — ${res.chunks_created} chunks created`, "success", 5000);
+      const triplesMsg = res.triples_extracted ? ` & ${res.triples_extracted} graph triples extracted!` : "";
+      toast(`✓ Ingested "${res.filename}" — ${res.chunks_created} chunks${triplesMsg}`, "success", 5000);
       infoEl.textContent = "";
       selectedFile = null;
       fileInput.value = "";
       uploadBtn.disabled = true;
       loadDocumentsTable();
+      import("./main.js").then(m => m.refreshGraph()).catch(() => {});
     } catch (err) {
       toast(`Ingest error: ${err.message}`, "error");
     } finally {
@@ -159,9 +161,11 @@ function wireDropZone() {
       pasteBtn.disabled = true;
       try {
         const res = await ingestRawText(text);
-        toast(`✓ Text ingested — ${res.chunks_created} chunks created`, "success", 5000);
+        const triplesMsg = res.triples_extracted ? ` & ${res.triples_extracted} graph triples extracted!` : "";
+        toast(`✓ Text ingested — ${res.chunks_created} chunks${triplesMsg}`, "success", 5000);
         document.getElementById("paste-text-input").value = "";
         loadDocumentsTable();
+        import("./main.js").then(m => m.refreshGraph()).catch(() => {});
       } catch (err) {
         toast(`Ingest error: ${err.message}`, "error");
       } finally {

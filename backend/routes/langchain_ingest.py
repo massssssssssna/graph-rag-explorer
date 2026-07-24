@@ -1,6 +1,7 @@
 """
 backend/routes/langchain_ingest.py
 API endpoints for LangChain document ingestion (PDF, DOCX, TXT upload & parsing).
+Extracts knowledge triples on ingestion to keep the Entity Graph updated dynamically.
 """
 import logging
 import uuid
@@ -14,15 +15,19 @@ from backend.langchain_rag.chunker import (
 )
 from backend.langchain_rag.qdrant_store import add_documents_to_store
 from backend.langchain_rag.supabase_store import save_document_metadata
+from backend.graph_rag.extractor import extract_triples
+from backend.graph_rag.knowledge_graph import knowledge_graph
 
 logger = logging.getLogger(__name__)
 lc_ingest_bp = Blueprint("lc_ingest", __name__)
+
 
 @lc_ingest_bp.route("/api/lc/ingest", methods=["POST"])
 def lc_ingest():
     """
     POST /api/lc/ingest
     Supports multipart file upload (PDF/DOCX/TXT) or raw JSON text payload.
+    Automatically extracts entity triples to update the Knowledge Graph!
     """
     filename = "document.txt"
     file_type = "txt"
@@ -58,6 +63,8 @@ def lc_ingest():
     if not pages:
         return jsonify({"error": "Could not extract text from document."}), 400
 
+    full_text = "\n\n".join(p["page_content"] for p in pages)
+
     # 1. Smart sentence-aware chunking
     docs = chunk_documents(pages)
     if not docs:
@@ -66,7 +73,17 @@ def lc_ingest():
     # 2. Vector Store ingestion (Qdrant Cloud / Voyage AI)
     added_count = add_documents_to_store(docs)
 
-    # 3. Store document metadata in Supabase Cloud
+    # 3. Knowledge Graph Entity Triple extraction & graph update
+    triples = extract_triples(full_text)
+    if triples:
+        knowledge_graph.add_triples(triples)
+        try:
+            knowledge_graph.save()
+            logger.info("Knowledge Graph updated with %d triples from %s", len(triples), filename)
+        except Exception as exc:
+            logger.warning("Graph save skipped: %s", exc)
+
+    # 4. Store document metadata in Supabase Cloud
     doc_id = str(uuid.uuid4())
     record = save_document_metadata(
         doc_id=doc_id,
@@ -83,5 +100,6 @@ def lc_ingest():
         "file_type": file_type,
         "chunks_created": len(docs),
         "vectors_stored": added_count,
+        "triples_extracted": len(triples),
         "metadata": record,
     })

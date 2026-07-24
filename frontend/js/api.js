@@ -45,7 +45,7 @@ export async function queryLangChainAgent(question) {
 }
 
 export async function fetchStoredDocuments() {
-  const res = await fetch(`${BASE}/api/lc/documents`);
+  const res = await fetch(`${BASE}/api/lc/documents`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -89,13 +89,13 @@ export async function queryQuestion(question) {
 }
 
 export async function fetchGraph() {
-  const res = await fetch(`${BASE}/api/graph`);
+  const res = await fetch(`${BASE}/api/graph?t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
 export async function fetchCommunities() {
-  const res = await fetch(`${BASE}/api/communities`);
+  const res = await fetch(`${BASE}/api/communities?t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
