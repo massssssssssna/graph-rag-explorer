@@ -1,0 +1,11 @@
+venv/
+pip_cache/
+tmp/
+.git/
+.env
+__pycache__/
+*.pyc
+data/*.pkl
+data/*.json
+W3D3_Graph_RAG_Global.ipynb
+ROUTES.md

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LangChain Vector RAG Hub — Qdrant & Supabase Cloud</title>
+  <meta name="description" content="LangChain Vector RAG system powered by Qdrant Cloud, Supabase, Hybrid Search (Dense + BM25), Query Expansion, FlashRank Reranking, and Tool Calling." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css" />
+  <!-- D3.js v7 for Graph RAG -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header id="header">
+    <div class="header-brand">
+      <div class="header-logo">⚡</div>
+      <div>
+        <span class="header-title">LangChain Vector RAG</span>
+        <span class="header-badge">Qdrant Cloud + Supabase</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" id="nav-tabs">
+      <button class="nav-tab active" data-tab="tab-query">💬 Query & Agent</button>
+      <button class="nav-tab" data-tab="tab-upload">📄 Document Ingest</button>
+      <button class="nav-tab" data-tab="tab-docs">📚 Document Library</button>
+      <button class="nav-tab" data-tab="tab-eval">📊 RAG Evaluation</button>
+      <button class="nav-tab" data-tab="tab-graph">🕸️ Graph RAG Explorer</button>
+    </nav>
+  </header>
+
+  <!-- ── Main Content Container ─────────────────────────────────────────── -->
+  <main id="main-content">
+
+    <!-- TAB 1: Query & Agent -->
+    <section class="tab-pane active" id="tab-query">
+      <div class="query-layout">
+        <!-- Left: Question Input Card -->
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3>🔍 Ask Questions & Run Agent</h3>
+            <span class="sub-text">Hybrid Retrieval (Dense + BM25) + Reranking</span>
+          </div>
+          <div class="card-body">
+            
+            <div class="mode-selector">
+              <label>Execution Mode:</label>
+              <div class="mode-pills" id="lc-mode-pills">
+                <button class="mode-pill active" data-mode="hybrid">⚡ LangChain Hybrid</button>
+                <button class="mode-pill" data-mode="rewrite">🔮 Query Expansion (HyDE)</button>
+                <button class="mode-pill" data-mode="agent">🤖 Tool-Calling Agent</button>
+                <button class="mode-pill" data-mode="dual">⚖️ Dual Search (Graph vs Vector)</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+              <label for="lc-question-input">Your Question:</label>
+              <textarea id="lc-question-input" rows="4" placeholder="e.g. What are the key points in the uploaded document? Or ask the agent to list documents..."></textarea>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btn-lc-ask">
+                <span class="spinner" id="lc-spinner" style="display:none"></span>
+                <span>Submit Query</span>
+              </button>
+              <button class="btn btn-secondary" id="btn-lc-sample">Sample Qs</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Answers & Retrieved Sources -->
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3 id="answer-title">✨ Generated Answer</h3>
+            <span class="badge-tag" id="answer-badge">Hybrid RAG</span>
+          </div>
+          <div class="card-body">
+            <div id="answer-content-area">
+              <div class="empty-state">
+                <div class="empty-icon">💡</div>
+                <p>Type a question or select a sample query to see the RAG response & retrieved source chunks here.</p>
+              </div>
+            </div>
+
+            <!-- Agent Tool Call Trace -->
+            <div id="agent-trace-box" style="display: none; margin-top: 16px;">
+              <h4>🛠️ Agent Tool Call Trace</h4>
+              <pre id="agent-trace-content"></pre>
+            </div>
+
+            <!-- Retrieved Chunks / Sources -->
+            <div id="retrieved-sources-box" style="display: none; margin-top: 20px;">
+              <h4>📚 Retrieved Source Chunks (Reranked)</h4>
+              <div class="chunks-list" id="chunks-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Document Ingest -->
+    <section class="tab-pane" id="tab-upload">
+      <div class="upload-grid">
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3>📤 Upload Files (PDF / DOCX / TXT)</h3>
+            <span class="sub-text">Smart Sentence-Aware Chunking → Qdrant Vector Store</span>
+          </div>
+          <div class="card-body">
+            
+            <!-- File Drop Zone -->
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-zone-icon">📁</div>
+              <p>Drag & drop your <strong>PDF, DOCX, or TXT</strong> file here</p>
+              <span class="or-divider">or</span>
+              <label for="file-upload-input" class="btn btn-secondary">Browse Files</label>
+              <input type="file" id="file-upload-input" accept=".pdf,.docx,.doc,.txt" style="display:none" />
+              <div id="selected-file-info" style="margin-top: 10px; font-weight: 500; color: var(--accent);"></div>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <button class="btn btn-primary" id="btn-upload-file" style="width: 100%;" disabled>
+                <span class="spinner" id="upload-spinner" style="display:none"></span>
+                <span>Process & Ingest Document</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct Text Input Alternative -->
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3>📝 Paste Text Directly</h3>
+            <span class="sub-text">Quick ingestion without uploading a file</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="paste-text-input">Raw Text Content:</label>
+              <textarea id="paste-text-input" rows="8" placeholder="Paste article or text passage here..."></textarea>
+            </div>
+            <button class="btn btn-secondary" id="btn-paste-ingest" style="width: 100%;">
+              <span>Ingest Raw Text</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Document Library (Supabase) -->
+    <section class="tab-pane" id="tab-docs">
+      <div class="card shadow-lg">
+        <div class="card-header">
+          <h3>📚 Ingested Document Registry</h3>
+          <span class="sub-text">Persisted in Supabase Cloud</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th>Document ID</th>
+                  <th>Filename</th>
+                  <th>Type</th>
+                  <th>Chunks</th>
+                  <th>Size</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="doc-table-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted);">Loading documents...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: RAG Evaluation -->
+    <section class="tab-pane" id="tab-eval">
+      <div class="eval-grid">
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3>📊 Run RAG Benchmarks</h3>
+            <span class="sub-text">Retrieval & Generation Quality Assessment</span>
+          </div>
+          <div class="card-body">
+            <p>Click below to evaluate retrieval precision, MRR, and LLM answer faithfulness across your dataset.</p>
+            <button class="btn btn-primary" id="btn-run-eval">
+              <span class="spinner" id="eval-spinner" style="display:none"></span>
+              <span>Execute RAG Evaluation</span>
+            </button>
+
+            <div class="metrics-summary" id="metrics-summary" style="display:none; margin-top:20px;">
+              <div class="metric-card">
+                <span class="metric-label">Precision@K</span>
+                <span class="metric-val" id="metric-precision">0.00</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">MRR Score</span>
+                <span class="metric-val" id="metric-mrr">0.00</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Faithfulness</span>
+                <span class="metric-val" id="metric-faithfulness">0.00</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-label">Relevance</span>
+                <span class="metric-val" id="metric-relevance">0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-lg">
+          <div class="card-header">
+            <h3>🛠️ Optimizations Applied</h3>
+          </div>
+          <div class="card-body">
+            <ul class="tech-list" id="tech-list">
+              <li>✅ <strong>Smart Chunking:</strong> LangChain RecursiveCharacterTextSplitter (Sentence-aware)</li>
+              <li>✅ <strong>Dense Embeddings:</strong> Voyage AI voyage-3 vectors (1024-dim)</li>
+              <li>✅ <strong>Vector Store:</strong> Qdrant Cloud Cluster</li>
+              <li>✅ <strong>Sparse Search:</strong> BM25 rank-bm25 keyword indexing</li>
+              <li>✅ <strong>Fusion:</strong> Reciprocal Rank Fusion (RRF)</li>
+              <li>✅ <strong>Reranking:</strong> FlashRank Cross-Encoder reranker</li>
+              <li>✅ <strong>Query Expansion:</strong> HyDE (Hypothetical Document Embeddings)</li>
+              <li>✅ <strong>Agent Tools:</strong> LangChain Tool Calling (Search, List, Summarize)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Graph RAG Explorer (Legacy/Graph view) -->
+    <section class="tab-pane" id="tab-graph">
+      <div class="graph-layout">
+        <div id="viz-area">
+          <div class="viz-controls-bar">
+            <button class="viz-btn" id="btn-zoom-in">+</button>
+            <button class="viz-btn" id="btn-zoom-out">−</button>
+            <button class="viz-btn" id="btn-fit-view">🎯</button>
+            <button class="viz-btn" id="btn-toggle-hulls">🎨</button>
+          </div>
+          <svg id="graph-svg"></svg>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- App Modules -->
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

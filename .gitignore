@@ -1,0 +1,26 @@
+# Environment & Secrets
+.env
+*.env
+
+# Python & Virtualenv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+pip_cache/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local data & logs
+tmp/
+*.log
+data/*.pkl
+data/*.json
+!data/solar_system_space_exploration.txt
