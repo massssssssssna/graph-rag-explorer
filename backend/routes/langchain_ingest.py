@@ -63,7 +63,8 @@ def lc_ingest():
     if not pages:
         return jsonify({"error": "Could not extract text from document."}), 400
 
-    full_text = "\n\n".join(p["page_content"] for p in pages)
+    # Extract full text safely from tuples (text, meta)
+    full_text = "\n\n".join(p[0] if isinstance(p, tuple) else str(p) for p in pages)
 
     # 1. Smart sentence-aware chunking
     docs = chunk_documents(pages)

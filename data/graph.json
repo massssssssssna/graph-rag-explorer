@@ -203,6 +203,33 @@
     },
     {
       "id": "earth at an average altitude of approximately 400 kilometers"
+    },
+    {
+      "id": "greencure"
+    },
+    {
+      "id": "supabase"
+    },
+    {
+      "id": "python"
+    },
+    {
+      "id": "pydantic"
+    },
+    {
+      "id": "tailwind css"
+    },
+    {
+      "id": "chart.js"
+    },
+    {
+      "id": "groq streaming"
+    },
+    {
+      "id": "mermaid js"
+    },
+    {
+      "id": "medtech"
     }
   ],
   "links": [
@@ -550,6 +577,46 @@
       "relation": "orbits",
       "source": "the iss",
       "target": "earth at an average altitude of approximately 400 kilometers"
+    },
+    {
+      "relation": "uses",
+      "source": "greencure",
+      "target": "supabase"
+    },
+    {
+      "relation": "uses",
+      "source": "greencure",
+      "target": "python"
+    },
+    {
+      "relation": "uses",
+      "source": "greencure",
+      "target": "pydantic"
+    },
+    {
+      "relation": "uses",
+      "source": "greencure",
+      "target": "tailwind css"
+    },
+    {
+      "relation": "uses",
+      "source": "greencure",
+      "target": "chart.js"
+    },
+    {
+      "relation": "develops",
+      "source": "greencure",
+      "target": "groq streaming"
+    },
+    {
+      "relation": "competes_with",
+      "source": "greencure",
+      "target": "mermaid js"
+    },
+    {
+      "relation": "launched_by",
+      "source": "greencure",
+      "target": "medtech"
     }
   ]
 }
