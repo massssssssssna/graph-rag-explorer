@@ -46,7 +46,7 @@ MIN_COMMUNITY_SIZE: int = 2             # minimum nodes in a Louvain community
 # ── Neo4j ─────────────────────────────────────────────────────────────────────
 NEO4J_URI: str = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME: str = os.environ.get("NEO4J_USERNAME", "a3a6ed27")
-NEO4J_PASSWORD: str = os.environ.get("NEO4J_PASSWORD", "iqJjdyOBoYVerU_j1G19cmEwiwNvYMrdfsKERZm5Ozw")
+NEO4J_PASSWORD: str = os.environ.get("NEO4J_PASSWORD", "azOFfddYvJnSBxyMuQNei10cO-yF3gck63eW_94m6vs")
 
 # ── Vector RAG (legacy in-memory) ─────────────────────────────────────────────
 EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
