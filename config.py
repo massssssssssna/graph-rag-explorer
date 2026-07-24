@@ -43,6 +43,11 @@ MAX_HOPS: int = 3                       # maximum traversal depth for multi-hop
 MAX_CONTEXT_TRIPLES: int = 30           # cap triples sent to LLM
 MIN_COMMUNITY_SIZE: int = 2             # minimum nodes in a Louvain community
 
+# ── Neo4j ─────────────────────────────────────────────────────────────────────
+NEO4J_URI: str = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USERNAME: str = os.environ.get("NEO4J_USERNAME", "a3a6ed27")
+NEO4J_PASSWORD: str = os.environ.get("NEO4J_PASSWORD", "iqJjdyOBoYVerU_j1G19cmEwiwNvYMrdfsKERZm5Ozw")
+
 # ── Vector RAG (legacy in-memory) ─────────────────────────────────────────────
 EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
 CHUNK_SIZE: int = 300                   # characters per chunk

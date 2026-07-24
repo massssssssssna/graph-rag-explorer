@@ -16,7 +16,7 @@ from backend.langchain_rag.chunker import (
 )
 from backend.langchain_rag.qdrant_store import add_documents_to_store
 from backend.langchain_rag.supabase_store import save_document_metadata
-from backend.graph_rag.extractor import extract_triples
+from backend.graph_rag.extractor import extract_graph_documents
 from backend.graph_rag.knowledge_graph import knowledge_graph
 
 logger = logging.getLogger(__name__)
@@ -75,10 +75,13 @@ def lc_ingest():
     added_count = add_documents_to_store(docs)
 
     # 3. Knowledge Graph Entity Triple extraction (in-memory for active session only)
-    triples = extract_triples(full_text)
-    if triples:
-        knowledge_graph.add_triples(triples)
-        logger.info("Added %d triples from %s to active session graph (not saved to primary graph.json)", len(triples), filename)
+    # We allow the user to toggle schema type via JSON payload, default to predefined
+    use_predefined = data.get("use_predefined_schema", True) if isinstance(data, dict) else True
+    
+    graph_docs = extract_graph_documents(full_text, use_predefined_schema=use_predefined)
+    if graph_docs:
+        knowledge_graph.add_graph_documents(graph_docs)
+        logger.info("Added graph documents to Neo4j for %s", filename)
 
     # 4. Store document metadata in Supabase Cloud
     doc_id = str(uuid.uuid4())
@@ -97,6 +100,6 @@ def lc_ingest():
         "file_type": file_type,
         "chunks_created": len(docs),
         "vectors_stored": added_count,
-        "triples_extracted": len(triples),
+        "graph_docs_extracted": len(graph_docs),
         "metadata": record,
     })

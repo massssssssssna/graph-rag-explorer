@@ -1,163 +1,73 @@
 """
 backend/graph_rag/knowledge_graph.py
-NetworkX DiGraph wrapper — builds, queries, persists, and serialises
-the knowledge graph from data files (Solar System, AI Ecosystem, etc.).
+LangChain Neo4j wrapper — connects to Neo4j graph database.
 """
-import json
 import logging
-import difflib
-import glob
-import os
-from pathlib import Path
 from typing import List, Optional
-
-import networkx as nx
-from backend.graph_rag.extractor import Triple, extract_triples
 import config
+from langchain_neo4j import Neo4jGraph
 
 logger = logging.getLogger(__name__)
 
-
 class KnowledgeGraph:
     """
-    Directed knowledge graph backed by networkx.DiGraph.
-    Nodes are entity strings; edges carry a 'relation' attribute.
+    Neo4j knowledge graph wrapper using LangChain Neo4jGraph.
     """
 
     def __init__(self) -> None:
-        self._g: nx.DiGraph = nx.DiGraph()
+        self._graph = None
 
     @property
-    def graph(self) -> nx.DiGraph:
-        return self._g
+    def graph(self) -> Neo4jGraph:
+        if self._graph is None:
+            self._graph = Neo4jGraph(
+                url=config.NEO4J_URI,
+                username=config.NEO4J_USERNAME,
+                password=config.NEO4J_PASSWORD
+            )
+        return self._graph
 
     # ── Mutation ─────────────────────────────────────────────────────────────
 
-    def add_triples(self, triples: List[Triple]) -> None:
-        """Add a list of triples to the graph."""
-        for t in triples:
-            s = str(t.subject).strip().lower()
-            o = str(t.object).strip().lower()
-            r = str(t.relation).strip().lower().replace(" ", "_")
-            if s and o and r:
-                if not self._g.has_edge(s, o):
-                    self._g.add_edge(s, o, relation=r)
-
-        logger.info(
-            "Graph now has %d nodes, %d edges.",
-            self._g.number_of_nodes(),
-            self._g.number_of_edges(),
-        )
+    def add_graph_documents(self, graph_docs: List) -> None:
+        """Add LangChain GraphDocuments to Neo4j."""
+        self.graph.add_graph_documents(graph_docs, baseEntityLabel=True, include_source=True)
+        logger.info("Added graph documents to Neo4j.")
 
     def clear(self) -> None:
-        self._g.clear()
+        self.graph.query("MATCH (n) DETACH DELETE n")
 
     # ── Queries ──────────────────────────────────────────────────────────────
-
-    def find_node(self, entity: str, cutoff: float = 0.6) -> Optional[str]:
+    
+    def find_node(self, entity: str) -> Optional[str]:
+        """Check if a node exists in Neo4j (case-insensitive fuzzy match via Cypher)."""
         entity = entity.strip().lower()
-        nodes = list(self._g.nodes())
-        if not nodes:
+        if not entity:
             return None
-        if entity in nodes:
-            return entity
-        matches = difflib.get_close_matches(entity, nodes, n=1, cutoff=cutoff)
-        return matches[0] if matches else None
-
-    def get_neighbors(self, node: str, depth: int = 1) -> List[Triple]:
-        visited: set = set()
-        triples: List[Triple] = []
-        frontier = {node}
-
-        for _ in range(depth):
-            next_frontier: set = set()
-            for n in frontier:
-                if n in visited:
-                    continue
-                visited.add(n)
-                for successor in self._g.successors(n):
-                    rel = self._g[n][successor].get("relation", "related_to")
-                    triples.append(Triple(subject=n, relation=rel, object=successor))
-                    next_frontier.add(successor)
-                for predecessor in self._g.predecessors(n):
-                    rel = self._g[predecessor][n].get("relation", "related_to")
-                    triples.append(Triple(subject=predecessor, relation=rel, object=n))
-                    next_frontier.add(predecessor)
-            frontier = next_frontier - visited
-
-        return triples
+            
+        try:
+            # Cypher CONTAINS for fuzzy match
+            query = """
+            MATCH (n)
+            WHERE toLower(n.id) CONTAINS $entity
+            RETURN n.id AS id
+            LIMIT 1
+            """
+            results = self.graph.query(query, params={"entity": entity})
+            if results:
+                return results[0]["id"]
+            return None
+        except Exception as exc:
+            logger.error("find_node error: %s", exc)
+            return None
 
     def stats(self) -> dict:
-        return {
-            "nodes": self._g.number_of_nodes(),
-            "edges": self._g.number_of_edges(),
-        }
-
-    # ── Serialisation & Auto-Build ─────────────────────────────────────────────
-
-    def to_json(self) -> dict:
-        """Return graph as node-link JSON (compatible with D3.js)."""
-        if self._g.number_of_nodes() == 0:
-            self.load()
-        return nx.node_link_data(self._g, edges="links")
-
-    def rebuild_from_data_files(self) -> int:
-        """Scans data/*.txt (Solar System, AI Ecosystem, etc.) and populates knowledge graph."""
-        self.clear()
-        data_dir = config.DATA_DIR
-        txt_files = glob.glob(os.path.join(str(data_dir), "*.txt"))
-        total_triples = 0
-        for fpath in txt_files:
-            try:
-                with open(fpath, "r", encoding="utf-8") as f:
-                    text = f.read()
-                triples = extract_triples(text)
-                self.add_triples(triples)
-                total_triples += len(triples)
-                logger.info("Loaded %d triples from %s", len(triples), os.path.basename(fpath))
-            except Exception as exc:
-                logger.error("Error building graph from %s: %s", fpath, exc)
-
-        logger.info(
-            "Rebuilt Knowledge Graph from data files: %d nodes, %d edges",
-            self._g.number_of_nodes(),
-            self._g.number_of_edges(),
-        )
-        return total_triples
-
-    def save(self, path=None) -> None:
-        if path is None:
-            path = config.GRAPH_FILE
-        data = nx.node_link_data(self._g, edges="links")
         try:
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-            logger.info("Graph saved to %s", path)
-        except Exception as exc:
-            logger.warning("Graph save skipped (read-only filesystem): %s", exc)
-
-    def load(self, path=None) -> bool:
-        """Load graph from JSON file or rebuild from data files if empty."""
-        if path is None:
-            path = config.GRAPH_FILE
-
-        try:
-            p = Path(path).resolve()
-            if p.exists():
-                with open(p, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                self._g = nx.node_link_graph(data, edges="links", directed=True)
-                if self._g.number_of_nodes() > 0:
-                    logger.info("Graph loaded: %d nodes, %d edges from %s", self._g.number_of_nodes(), self._g.number_of_edges(), p)
-                    return True
-
-            self.rebuild_from_data_files()
-            return True
-        except Exception as exc:
-            logger.warning("Failed to load graph from %s (%s) — auto-rebuilding from data files.", path, exc)
-            self.rebuild_from_data_files()
-            return True
-
+            nodes = self.graph.query("MATCH (n) RETURN count(n) AS count")[0]["count"]
+            edges = self.graph.query("MATCH ()-[r]->() RETURN count(r) AS count")[0]["count"]
+            return {"nodes": nodes, "edges": edges}
+        except Exception:
+            return {"nodes": 0, "edges": 0}
 
 # Singleton shared instance
 knowledge_graph = KnowledgeGraph()
