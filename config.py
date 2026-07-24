@@ -31,7 +31,7 @@ VOYAGE_EMBED_MODEL: str = "voyage-3"
 # ── Qdrant Cloud ─────────────────────────────────────────────────────────────
 QDRANT_URL: str = os.environ.get("QDRANT_URL", "")
 QDRANT_API_KEY: str = os.environ.get("QDRANT_API_KEY", "")
-QDRANT_COLLECTION: str = os.environ.get("QDRANT_COLLECTION", "langchain_rag")
+QDRANT_COLLECTION: str = os.environ.get("QDRANT_COLLECTION", "academic_rag_demo")
 
 # ── Supabase ──────────────────────────────────────────────────────────────────
 SUPABASE_URL: str = os.environ.get("SUPABASE_URL", "")
@@ -45,7 +45,7 @@ MIN_COMMUNITY_SIZE: int = 2             # minimum nodes in a Louvain community
 
 # ── Vector RAG (legacy in-memory) ─────────────────────────────────────────────
 EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
-CHUNK_SIZE: int = 300                   # characters per chunk (approx 1 paragraph)
+CHUNK_SIZE: int = 300                   # characters per chunk
 CHUNK_OVERLAP: int = 50                 # character overlap between chunks
 TOP_K: int = 5                          # number of chunks to retrieve
 

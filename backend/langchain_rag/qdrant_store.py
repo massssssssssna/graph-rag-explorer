@@ -1,7 +1,7 @@
 """
 backend/langchain_rag/qdrant_store.py
 Qdrant Cloud vector store with InMemoryVectorStore fallback.
-Embeddings are resolved once and cached.
+Supports custom collection names and scoped API keys.
 """
 import logging
 from typing import List, Tuple
@@ -12,7 +12,7 @@ import config
 logger = logging.getLogger(__name__)
 
 _store = None
-_all_docs: List[Document] = []  # in-process document cache for BM25
+_all_docs: List[Document] = []  # local cache for BM25
 
 
 def _get_embeddings():
@@ -28,7 +28,6 @@ def get_store():
 
     embeddings = _get_embeddings()
 
-    # Try Qdrant Cloud
     has_qdrant = (
         config.QDRANT_URL
         and config.QDRANT_API_KEY
@@ -40,36 +39,49 @@ def get_store():
             from qdrant_client.models import Distance, VectorParams
             from langchain_qdrant import QdrantVectorStore
 
-            client = QdrantClient(url=config.QDRANT_URL, api_key=config.QDRANT_API_KEY, timeout=10)
-            existing = [c.name for c in client.get_collections().collections]
-            if config.QDRANT_COLLECTION not in existing:
-                # Determine vector size from embeddings
+            client = QdrantClient(url=config.QDRANT_URL, api_key=config.QDRANT_API_KEY, timeout=12)
+            
+            # Check existing collections
+            try:
+                existing = [c.name for c in client.get_collections().collections]
+            except Exception:
+                existing = []
+
+            col_name = config.QDRANT_COLLECTION or "academic_rag_demo"
+
+            if col_name not in existing:
+                dim = 1024  # default Voyage-3 vector size
                 try:
                     sample = embeddings.embed_query("hello")
-                    dim = len(sample)
+                    if sample and len(sample) > 0:
+                        dim = len(sample)
                 except Exception:
-                    dim = 384
-                client.create_collection(
-                    collection_name=config.QDRANT_COLLECTION,
-                    vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
-                )
-                logger.info("Created Qdrant collection '%s' (dim=%d)", config.QDRANT_COLLECTION, dim)
+                    pass
+
+                try:
+                    client.create_collection(
+                        collection_name=col_name,
+                        vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
+                    )
+                    logger.info("Created Qdrant Cloud collection '%s' (dim=%d)", col_name, dim)
+                except Exception as c_err:
+                    logger.info("Collection creation notice: %s", c_err)
 
             _store = QdrantVectorStore(
                 client=client,
-                collection_name=config.QDRANT_COLLECTION,
+                collection_name=col_name,
                 embedding=embeddings,
             )
-            logger.info("Connected to Qdrant Cloud: '%s'", config.QDRANT_COLLECTION)
+            logger.info("Connected to Qdrant Cloud collection '%s'", col_name)
             return _store
         except Exception as exc:
-            logger.warning("Qdrant Cloud unavailable (%s) — using InMemory fallback.", exc)
+            logger.warning("Qdrant Cloud fallback: %s. Using InMemoryVectorStore.", exc)
 
     # InMemory fallback
     try:
         from langchain_core.vectorstores import InMemoryVectorStore
         _store = InMemoryVectorStore(embeddings)
-        logger.info("Using InMemoryVectorStore (data lost on restart — ingest again).")
+        logger.info("Using InMemoryVectorStore fallback.")
     except Exception as exc:
         logger.error("Cannot initialise any vector store: %s", exc)
     return _store
